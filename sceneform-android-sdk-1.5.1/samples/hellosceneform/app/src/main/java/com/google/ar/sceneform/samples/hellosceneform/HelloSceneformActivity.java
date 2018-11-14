@@ -25,14 +25,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
+import com.google.ar.core.Pose;
+import com.google.ar.core.Session;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
+
+import java.util.ArrayList;
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
@@ -43,6 +48,12 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
   private ArFragment arFragment;
   private ModelRenderable andyRenderable;
+
+  private static ArrayList<Pose> listOfPoses = new ArrayList<>();
+
+  private TextView position1 = null;
+  private TextView position2 = null;
+  private static String xyz = "";
 
   @Override
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -79,10 +90,28 @@ public class HelloSceneformActivity extends AppCompatActivity {
             return;
           }
 
+          //Create the session
+            Session session = arFragment.getArSceneView().getSession();
+
           // Create the Anchor.
           Anchor anchor = hitResult.createAnchor();
           AnchorNode anchorNode = new AnchorNode(anchor);
           anchorNode.setParent(arFragment.getArSceneView().getScene());
+
+            listOfPoses.add(anchor.getPose());
+            Float x = anchor.getPose().tx();
+            Float y = anchor.getPose().ty();
+            Float z = anchor.getPose().tz();
+
+            position1 = findViewById(R.id.position);
+            xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(x), Float.toString(y), Float.toString(z));
+            position1.setText(xyz);
+            xyz = xyz + "\n";
+
+            if (listOfPoses.size() == 2){
+                xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(Math.abs(listOfPoses.get(0).tx())-Math.abs(listOfPoses.get(1).tx())), Float.toString(Math.abs(listOfPoses.get(0).ty())-Math.abs(listOfPoses.get(1).ty())), Float.toString(Math.abs(listOfPoses.get(0).tz())-Math.abs(listOfPoses.get(1).tz())));
+                position1.setText(xyz);
+            }
 
           // Create the transformable andy and add it to the anchor.
           TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
