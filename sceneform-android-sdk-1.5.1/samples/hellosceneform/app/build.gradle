@@ -36,7 +36,7 @@ android {
              * 1. 'arm64-v8a' to run on devices
              * 2. 'x86' to run in the Android emulator
              */
-            abiFilters "armeabi", "armeabi-v7a", "x86"
+            abiFilters "armeabi", "armeabi-v7a"
         }
     }
     // Sceneform libraries use language constructs from Java 8.
