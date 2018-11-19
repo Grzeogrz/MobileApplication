@@ -38,6 +38,7 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
@@ -45,15 +46,15 @@ import java.util.ArrayList;
 public class HelloSceneformActivity extends AppCompatActivity {
   private static final String TAG = HelloSceneformActivity.class.getSimpleName();
   private static final double MIN_OPENGL_VERSION = 3.0;
+  private static final String DISTANCE_EQUALS = "Distance in cm: ";
 
   private ArFragment arFragment;
   private ModelRenderable andyRenderable;
 
   private static ArrayList<Pose> listOfPoses = new ArrayList<>();
+  DistanceMeasurment distanceMeasurment = new DistanceMeasurment();
 
-  private TextView position1 = null;
-  private TextView position2 = null;
-  private static String xyz = "";
+  private TextView position = null;
 
   @Override
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -72,7 +73,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
     // When you build a Renderable, Sceneform loads its resources in the background while returning
     // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
     ModelRenderable.builder()
-        .setSource(this, R.raw.andy)
+        .setSource(this, R.raw.model)//R.raw.andy)
         .build()
         .thenAccept(renderable -> andyRenderable = renderable)
         .exceptionally(
@@ -99,19 +100,20 @@ public class HelloSceneformActivity extends AppCompatActivity {
           anchorNode.setParent(arFragment.getArSceneView().getScene());
 
             listOfPoses.add(anchor.getPose());
-            Float x = anchor.getPose().tx();
-            Float y = anchor.getPose().ty();
-            Float z = anchor.getPose().tz();
+            //position1 = findViewById(R.id.position);
+//            xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(x), Float.toString(y), Float.toString(z));
+//            position1.setText(xyz);
+//            xyz = xyz + "\n";
 
-            position1 = findViewById(R.id.position);
-            xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(x), Float.toString(y), Float.toString(z));
-            position1.setText(xyz);
-            xyz = xyz + "\n";
+//            if (listOfPoses.size() == 2){
+//                xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(Math.abs(listOfPoses.get(0).tx())-Math.abs(listOfPoses.get(1).tx())), Float.toString(Math.abs(listOfPoses.get(0).ty())-Math.abs(listOfPoses.get(1).ty())), Float.toString(Math.abs(listOfPoses.get(0).tz())-Math.abs(listOfPoses.get(1).tz())));
+//                position1.setText(xyz);
+//            }
 
-            if (listOfPoses.size() == 2){
-                xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(Math.abs(listOfPoses.get(0).tx())-Math.abs(listOfPoses.get(1).tx())), Float.toString(Math.abs(listOfPoses.get(0).ty())-Math.abs(listOfPoses.get(1).ty())), Float.toString(Math.abs(listOfPoses.get(0).tz())-Math.abs(listOfPoses.get(1).tz())));
-                position1.setText(xyz);
-            }
+            //Measure distance
+//            Double distance = distanceMeasurment.getDistance(listOfPoses);
+//            position1.setText(Double.toString(distance));
+            measureAndShow(listOfPoses);
 
           // Create the transformable andy and add it to the anchor.
           TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
@@ -148,5 +150,11 @@ public class HelloSceneformActivity extends AppCompatActivity {
       return false;
     }
     return true;
+  }
+
+  private void measureAndShow(List<Pose> listOfPoses){
+      position = findViewById(R.id.position);
+      Double distance = distanceMeasurment.getDistance(listOfPoses);
+      position.setText(DISTANCE_EQUALS + Double.toString(distance));
   }
 }
