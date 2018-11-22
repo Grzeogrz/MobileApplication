@@ -84,3 +84,8 @@ sceneform.asset('sampledata/models/model.obj',
         'default',
         'sampledata/models/model.sfa',
         'src/main/res/raw/model')
+
+sceneform.asset('sampledata/models/arrow.fbx',
+        'default',
+        'sampledata/models/arrow.sfa',
+        'src/main/assets/arrow')
