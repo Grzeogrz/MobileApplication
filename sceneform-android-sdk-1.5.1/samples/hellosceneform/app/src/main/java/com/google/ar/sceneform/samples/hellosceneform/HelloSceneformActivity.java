@@ -18,13 +18,19 @@ package com.google.ar.sceneform.samples.hellosceneform;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.ar.core.Anchor;
@@ -39,13 +45,14 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
  */
-public class HelloSceneformActivity extends AppCompatActivity {
+public class HelloSceneformActivity extends AppCompatActivity implements View.OnClickListener{
   private static final String TAG = HelloSceneformActivity.class.getSimpleName();
   private static final double MIN_OPENGL_VERSION = 3.0;
   private static final String DISTANCE_EQUALS = "Distance in cm: ";
@@ -57,6 +64,10 @@ public class HelloSceneformActivity extends AppCompatActivity {
   DistanceMeasurment distanceMeasurment = new DistanceMeasurment();
 
   private TextView position = null;
+  private Button screenShotButton = null;
+  private ConstraintLayout rootContent = null;
+
+  ImageView imageToDisplay = null;
 
   @Override
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -117,6 +128,16 @@ public class HelloSceneformActivity extends AppCompatActivity {
 //            position1.setText(Double.toString(distance));
             measureAndShow(listOfPoses);
 
+            screenShotButton = findViewById(R.id.screenshot);
+            screenShotButton.setOnClickListener(this);
+
+            imageToDisplay = findViewById(R.id.imageView);
+            imageToDisplay.setAlpha(0.5f);
+            imageToDisplay.setVisibility(View.INVISIBLE);
+            imageToDisplay.setImageResource(R.drawable.screen);
+
+//            takeScreenShot();
+
           // Create the transformable andy and add it to the anchor.
           TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
           andy.setLocalRotation(Quaternion.axisAngle(new Vector3(0, 0, 1f), 90f));
@@ -160,4 +181,29 @@ public class HelloSceneformActivity extends AppCompatActivity {
       Double distance = distanceMeasurment.getDistance(listOfPoses);
       position.setText(DISTANCE_EQUALS + Double.toString(distance));
   }
+
+  @Override
+  public void onClick(View v) {
+      if (v.getId() == R.id.screenshot && imageToDisplay.getVisibility() == View.INVISIBLE){
+          imageToDisplay.setVisibility(View.VISIBLE);
+      }
+      else
+          imageToDisplay.setVisibility(View.INVISIBLE);
+
+      //takeScreenShot();
+  }
+
+  private void takeScreenShot(){
+      Bitmap bitmap = null;
+      //screenShotButton = findViewById(R.id.screenshot);
+      //screenShotButton.setOnClickListener(this);
+      rootContent = (ConstraintLayout) findViewById(R.id.rootContent);
+      bitmap = ScreenshotUtils.getScreenShot(rootContent);
+
+      if (bitmap != null){
+          File savedFile = ScreenshotUtils.getMainDirectoryName(this);
+          File file = ScreenshotUtils.storeScreenShot(bitmap, "screenshot.jpg", savedFile);
+      }
+  }
+
 }

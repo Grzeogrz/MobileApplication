@@ -17,6 +17,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.google.ar.sceneform.samples.hellosceneform">
     <!-- Always needed for AR. -->
+    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- This tag indicates that this application requires ARCore. This results in the application
