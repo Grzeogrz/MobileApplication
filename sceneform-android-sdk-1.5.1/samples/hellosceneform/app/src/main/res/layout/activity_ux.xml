@@ -23,16 +23,30 @@
     android:id="@+id/rootContent">
 
 
+  <SurfaceView
+      android:id="@+id/surfaceView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+  <!--<fragment-->
+      <!--android:id="@+id/ux_fragment"-->
+      <!--android:name="com.google.ar.sceneform.ux.ArFragment"-->
+      <!--android:layout_width="0dp"-->
+      <!--android:layout_height="0dp"-->
+      <!--app:layout_constraintBottom_toBottomOf="parent"-->
+      <!--app:layout_constraintEnd_toEndOf="parent"-->
+      <!--app:layout_constraintStart_toStartOf="parent"-->
+      <!--app:layout_constraintTop_toTopOf="parent" />-->
 
   <fragment
       android:id="@+id/ux_fragment"
-      android:name="com.google.ar.sceneform.ux.ArFragment"
+      android:name="com.google.ar.sceneform.samples.hellosceneform.WritingArFragment"
       android:layout_width="0dp"
       android:layout_height="0dp"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
+       app:layout_constraintEnd_toEndOf="parent"
+       app:layout_constraintStart_toStartOf="parent"
+     app:layout_constraintTop_toTopOf="parent" />
 
   <ImageView
       android:id="@+id/imageView"
@@ -51,14 +65,29 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-  <Button
-      android:id="@+id/screenshot"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="ScreenShot"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/position" />
+    <Button
+        android:id="@+id/screenshot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ScreenShot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.202"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/position"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
+
+    <Button
+        android:id="@+id/takescreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Take screenshot"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.797"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/position"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
 
 </android.support.constraint.ConstraintLayout>

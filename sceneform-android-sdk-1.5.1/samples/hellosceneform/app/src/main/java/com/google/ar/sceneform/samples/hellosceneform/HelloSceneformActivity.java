@@ -33,14 +33,20 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.PixelCopy;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -52,15 +58,18 @@ import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -74,6 +83,9 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
   private static final double MIN_OPENGL_VERSION = 3.0;
   private static final String DISTANCE_EQUALS = "Distance in cm: ";
 
+  private static float x_screen;
+  private static float y_screen;
+
   private ArFragment arFragment;
   private ModelRenderable andyRenderable;
 
@@ -82,13 +94,20 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
 
   private TextView position = null;
   private Button screenShotButton = null;
+  private Button takeScrenshotButton = null;
   private ConstraintLayout rootContent = null;
+  private SurfaceView mSurfaceView = null;
 
   public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
   ImageView imageToDisplay = null;
 
     private int PICK_IMAGE_REQUEST = 1;
+
+    private static final String REQUIRED_PERMISSIONS[] = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
+    };
 
   @Override
   @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -124,7 +143,6 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
           if (andyRenderable == null) {
             return;
           }
-
           //Create the session
             Session session = arFragment.getArSceneView().getSession();
 
@@ -134,31 +152,22 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
           anchorNode.setParent(arFragment.getArSceneView().getScene());
 
             listOfPoses.add(anchor.getPose());
-            //position1 = findViewById(R.id.position);
-//            xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(x), Float.toString(y), Float.toString(z));
-//            position1.setText(xyz);
-//            xyz = xyz + "\n";
-
-//            if (listOfPoses.size() == 2){
-//                xyz = xyz + String.format("x: %s y: %s z: %s", Float.toString(Math.abs(listOfPoses.get(0).tx())-Math.abs(listOfPoses.get(1).tx())), Float.toString(Math.abs(listOfPoses.get(0).ty())-Math.abs(listOfPoses.get(1).ty())), Float.toString(Math.abs(listOfPoses.get(0).tz())-Math.abs(listOfPoses.get(1).tz())));
-//                position1.setText(xyz);
-//            }
-
-            //Measure distance
-//            Double distance = distanceMeasurment.getDistance(listOfPoses);
-//            position1.setText(Double.toString(distance));
             measureAndShow(listOfPoses);
 
             screenShotButton = findViewById(R.id.screenshot);
             screenShotButton.setOnClickListener(this);
 
+            takeScrenshotButton = findViewById(R.id.takescreen);
+            takeScrenshotButton.setOnClickListener(this);
+
             imageToDisplay = findViewById(R.id.imageView);
             imageToDisplay.setAlpha(0.5f);
             imageToDisplay.setVisibility(View.INVISIBLE);
             imageToDisplay.setImageResource(R.drawable.screen);
-            //takeImage();
 
-//            takeScreenShot();
+            x_screen = motionEvent.getX();
+            y_screen = motionEvent.getY();
+
 
           // Create the transformable andy and add it to the anchor.
           TransformableNode andy = new TransformableNode(arFragment.getTransformationSystem());
@@ -198,6 +207,7 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
     return true;
   }
 
+
   private void measureAndShow(List<Pose> listOfPoses){
       position = findViewById(R.id.position);
       Double distance = distanceMeasurment.getDistance(listOfPoses);
@@ -207,9 +217,14 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
   @Override
   public void onClick(View v) {
       if (v.getId() == R.id.screenshot && imageToDisplay.getVisibility() == View.INVISIBLE){
-          takeScreenShot();
+          //takeScreenShot();
+          ArSceneView arSceneView = arFragment.getArSceneView();
+          //takePhoto(arSceneView);
           takeImage(v.getContext());
           imageToDisplay.setVisibility(View.VISIBLE);
+      }else if (v.getId() == R.id.takescreen){
+          ArSceneView arSceneView = arFragment.getArSceneView();
+          takePhoto(arSceneView);
       }
       else
           imageToDisplay.setVisibility(View.INVISIBLE);
@@ -255,21 +270,22 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
     }
 
   private void takeImage(Context context) {
-//      Intent intent = new Intent();
-//      intent.setType("image/*");
-//      intent.setAction(Intent.ACTION_GET_CONTENT);
-//      startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
       if (checkPermissionREAD_EXTERNAL_STORAGE(context)) {
           String[] projection = new String[]{
                   MediaStore.Images.ImageColumns._ID,
                   MediaStore.Images.ImageColumns.DATA,
                   MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
                   MediaStore.Images.ImageColumns.DATE_TAKEN,
-                  MediaStore.Images.ImageColumns.MIME_TYPE
+                  MediaStore.Images.ImageColumns.MIME_TYPE,
+                  MediaStore.Images.ImageColumns.DISPLAY_NAME
           };
+          System.out.print(MediaStore.Images.ImageColumns.DISPLAY_NAME);
           ContentResolver contentResolver = context.getContentResolver();
           Cursor cursor = contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null,
                   null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
+
+//          Cursor cursor = contentResolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, MediaStore.Images.ImageColumns.DISPLAY_NAME + " LIKE 'screenshot.jpg'",
+//                  null, null);
 
           if (cursor.moveToFirst()) {
               final ImageView imageView = (ImageView) findViewById(R.id.imageView);
@@ -360,4 +376,77 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
                         grantResults);
         }
     }
+
+//    ///////////////
+    private String generateFilename() {
+        String date =
+                new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date());
+        return Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + File.separator + "Screenshots/"  + "screenshot.jpg";
+    }
+
+    private void saveBitmapToDisk(Bitmap bitmap, String filename) throws IOException {
+
+        File out = new File(filename);
+        if (!out.getParentFile().exists()) {
+            out.getParentFile().mkdirs();
+        }
+        try (FileOutputStream outputStream = new FileOutputStream(filename);
+             ByteArrayOutputStream outputData = new ByteArrayOutputStream()) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputData);
+            outputData.writeTo(outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException ex) {
+            throw new IOException("Failed to save bitmap to disk", ex);
+        }
+    }
+
+    private void takePhoto(ArSceneView arSceneView) {
+        final String filename = generateFilename();
+        ArSceneView view = arSceneView;
+
+        // Create a bitmap the size of the scene view.
+        final Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        // Create a handler thread to offload the processing of the image.
+        final HandlerThread handlerThread = new HandlerThread("PixelCopier");
+        handlerThread.start();
+        // Make the request to copy.
+        PixelCopy.request(view, bitmap, (copyResult) -> {
+            if (copyResult == PixelCopy.SUCCESS) {
+                try {
+                    saveBitmapToDisk(bitmap, filename);
+                } catch (IOException e) {
+                    Toast toast = Toast.makeText(arSceneView.getContext(), e.toString(),
+                            Toast.LENGTH_LONG);
+                    toast.show();
+                    return;
+                }
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                        "Photo saved", Snackbar.LENGTH_LONG);
+                snackbar.setAction("Open in Photos", v -> {
+                    File photoFile = new File(filename);
+
+                    Uri photoURI = FileProvider.getUriForFile(arSceneView.getContext(),
+                            arSceneView.getContext().getPackageName() + ".ar.codelab.name.provider",
+                            photoFile);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, photoURI);
+                    intent.setDataAndType(photoURI, "image/*");
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(intent);
+
+                });
+                snackbar.show();
+            } else {
+                Toast toast = Toast.makeText(arSceneView.getContext(),
+                        "Failed to copyPixels: " + copyResult, Toast.LENGTH_LONG);
+                toast.show();
+            }
+            handlerThread.quitSafely();
+        }, new Handler(handlerThread.getLooper()));
+    }
+
+
 }
