@@ -27,7 +27,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -59,8 +58,6 @@ import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
-import com.google.ar.sceneform.math.Quaternion;
-import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
@@ -71,7 +68,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -95,6 +91,7 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
   private TextView position = null;
   private Button screenShotButton = null;
   private Button takeScrenshotButton = null;
+  private Button tapTheScreen = null;
   private ConstraintLayout rootContent = null;
   private SurfaceView mSurfaceView = null;
 
@@ -159,6 +156,9 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
 
             takeScrenshotButton = findViewById(R.id.takescreen);
             takeScrenshotButton.setOnClickListener(this);
+
+            tapTheScreen = findViewById(R.id.tapbutton);
+            tapTheScreen.setOnClickListener(this);
 
             imageToDisplay = findViewById(R.id.imageView);
             imageToDisplay.setAlpha(0.5f);
@@ -226,10 +226,12 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
           ArSceneView arSceneView = arFragment.getArSceneView();
           takePhoto(arSceneView);
       }
+      else if (v.getId() == R.id.tapbutton){
+          tapScreen();
+      }
       else
           imageToDisplay.setVisibility(View.INVISIBLE);
 
-      //takeScreenShot();
   }
 
   private void takeScreenShot(){
@@ -382,7 +384,7 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
         String date =
                 new SimpleDateFormat("yyyyMMddHHmmss", java.util.Locale.getDefault()).format(new Date());
         return Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES) + File.separator + "Screenshots/"  + "screenshot.jpg";
+                Environment.DIRECTORY_PICTURES) + File.separator + "Screenshots/"  + "screenshot.png";
     }
 
     private void saveBitmapToDisk(Bitmap bitmap, String filename) throws IOException {
@@ -449,4 +451,11 @@ public class HelloSceneformActivity extends AppCompatActivity implements View.On
     }
 
 
+    private void tapScreen(){
+        try {
+            Runtime.getRuntime().exec("input tap " + x_screen +" "+ y_screen);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
