@@ -67,12 +67,11 @@
 
     <Button
         android:id="@+id/screenshot"
-        android:layout_width="wrap_content"
+        android:layout_width="114dp"
         android:layout_height="wrap_content"
-        android:text="ScreenShot"
+        android:layout_marginStart="132dp"
+        android:text="Display"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.202"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/position"
         app:srcCompat="@android:drawable/ic_menu_camera" />
@@ -81,10 +80,23 @@
         android:id="@+id/takescreen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Take screenshot"
+        android:text="Screenshot"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.797"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/position"
+        app:layout_constraintVertical_bias="1.0"
+        app:srcCompat="@android:drawable/ic_menu_camera" />
+
+    <Button
+        android:id="@+id/tapbutton"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="Tap"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.943"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/position"
         app:layout_constraintVertical_bias="1.0"
